@@ -88,6 +88,22 @@
 
         zipcodeInput.value = '';
       });
+
+      // subscribe to stream, update temperature on interval
+      const replayZipStream = new Rx.ReplaySubject();
+      zipcodeStream.subscribe(replayZipStream);
+
+      Rx.Observable
+        .interval(20000)
+        .switchMap(() => replayZipStream)
+        .flatMap(zipTemperatureStreamFactory)
+        .forEach(({ zip, temp }) => {
+          console.log('Updating!', zip, temp);
+          const locationEl = document.getElementById(`zip-${zip}`);
+          const tempEl = locationEl.querySelector('.temp');
+
+          tempEl.innerHTML = `${temp}&deg;F`;
+        });
     </script>
   </body>
   </html>
