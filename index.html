@@ -42,9 +42,52 @@
     const btnClickStream =
       Rx.Observable
         .fromEvent(addLocationBtn, 'click')
-        .mapTo(true)
-        .forEach(val => console.log('btnClickStream val', val));
+        .mapTo(true);
 
+    const zipInputStream =
+      Rx.Observable
+        .fromEvent(zipcodeInput, 'input')
+        .map(e => e.target.value)
+        .filter(zip => zip.length === 5)
+
+    // get zipcode when button clicked
+    const zipcodeStream =
+      btnClickStream
+        .withLatestFrom(zipInputStream, (click, zip) => zip)
+        .distinct();
+
+    // create re-usable temperature fetching stream
+    const getTemperature = zip =>
+      fetch(`http://api.openweathermap.org/data/2.5/weather?q=${zip},us&units=imperial&APPID=beccf623c28098d96f806ef5b0af4415`)
+        .then(res => res.json());
+
+    const zipTemperatureStreamFactory = zip =>
+      Rx.Observable
+        .fromPromise(getTemperature(zip))
+        .map(({ main: { temp } }) => ({ temp, zip }));
+
+    // get new zip on button click, get temperature, and paint to dom
+    zipcodeStream
+      .flatMap(zipTemperatureStreamFactory)
+      .forEach(({ temp, zip }) => {
+        const locationEl = document.createElement('div');
+        locationEl.id = `zip-${zip}`;
+        locationEl.classList.add('location');
+
+        const zipEl = document.createElement('p');
+        zipEl.classList.add('zip');
+        zipEl.innerText = zip;
+
+        const tempEl = document.createElement('p');
+        tempEl.classList.add('temp');
+        tempEl.innerHTML = `${temp}&deg;F`;
+
+        locationEl.appendChild(zipEl);
+        locationEl.appendChild(tempEl);
+        appContainer.appendChild(locationEl);
+
+        zipcodeInput.value = '';
+      });
     </script>
   </body>
   </html>
