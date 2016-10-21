@@ -34,6 +34,7 @@
     </div>
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/4.1.0/rx.all.min.js"></script> -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/5.0.0-beta.12/Rx.min.js"></script>
+    <script src="config.js"></script>
     <script>
     const appContainer = document.getElementById('app-container');
     const zipcodeInput = document.getElementById('zipcode-input');
@@ -58,7 +59,7 @@
 
     // create re-usable temperature fetching stream
     const getTemperature = zip =>
-      fetch(`http://api.openweathermap.org/data/2.5/weather?q=${zip},us&units=imperial&APPID=beccf623c28098d96f806ef5b0af4415`)
+      fetch(`http://api.openweathermap.org/data/2.5/weather?q=${zip},us&units=imperial&APPID=${globalConfig.openWeatherKey}`)
         .then(res => res.json());
 
     const zipTemperatureStreamFactory = zip =>
